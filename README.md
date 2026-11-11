@@ -5,8 +5,8 @@
 > 반복 업무를 도구로 자동화하고 문제의 근본 원인을 끝까지 찾는 것을 중요하게 생각합니다.
 
 - Email : 35wkd2817@naver.com
-- Portfolio : [DB Metadata Generator](https://github.com/kang1597/db-metadata-generator)
-              [content-ranking-system](https://github.com/kang1597/content-ranking)
+- Portfolio : [DB Metadata Generator](https://github.com/kang1597/db-metadata-generator)<br>
+              [content-ranking-system](https://github.com/kang1597/content-ranking-system.git)
 <br>
 
 ## 경력 요약 (총 2년 2개월)
