@@ -172,7 +172,34 @@
 - 테스트 13개(단위 7 · PostgreSQL/MariaDB 통합 6)를 GitHub Actions에서 push마다 두 DB 컨테이너로 자동 실행
 - Docker 멀티 스테이지 빌드와 의존성 레이어 캐싱으로 실행 이미지 **176MB**, Docker Compose로 앱·DB 일괄 실행
 
-<br>
+### Content Ranking System — 콘텐츠 좋아요/랭킹 집계 시스템
+
+[github.com/kang1597/content-ranking-system](https://github.com/kang1597/content-ranking-system)
+
+좋아요 수를 비정규화 컬럼에 저장하면서 발생하는 **갱신 손실(Lost Update)** 을 100개 스레드로 재현하고,
+**6가지 동시성 제어 방식을 동일 조건에서 측정해 비교**한 프로젝트입니다.
+
+| 기간 | 2026.09 ~ 2026.11 (개인) |
+| --- | --- |
+| 기술 | Java 17, Spring Boot 4, Spring Security 7, JPA(Hibernate 7), MySQL 8, Redis 7, Docker Compose, GitHub Actions |
+
+**측정 결과** (요청 100건 / 스레드 32 / 커넥션 풀 10)
+
+| 전략 | 처리량 | 정합성 | 초당 처리 |
+| --- | --- | --- | --- |
+| 조회 후 UPDATE | 12% | ✅ | 5.2건/s |
+| 순서만 변경 | 10% | ✅ | 9.8건/s |
+| 비관적 락 | 100% | ✅ | 22.0건/s |
+| 낙관적 락 | 100% | ✅ | 15.5건/s |
+| **DB 원자적 연산** | **100%** | **✅** | **45.0건/s** |
+| Redis 원자적 연산 | 100% | ✅(Redis) | 234건/s |
+
+- **DB 원자적 연산 채택** — 값을 읽지 않고 DB에 연산을 맡겨 읽고-쓰는 틈을 제거. 락 보유 구간이 가장 짧아 비관적 락의 2배 처리량. Redis 방식이 7배 빨랐으나 *진실이 휘발성 저장소에 있으면 안 된다*고 판단해 제외하고, 전환 임계점을 문서화
+- **FK 공유 락으로 인한 데드락 발견 및 해결** — INSERT가 부모 행에 거는 S 락과 뒤이은 UPDATE의 X 락이 순환 대기를 일으켜 100건 중 80건 실패. 락 획득 순서를 바꿔 제거
+- **조용한 실패 발견** — 데드락만 없앤 구현이 100% 성공을 보고하면서 90%를 유실. `@Version`으로 조용한 유실을 명시적 실패로 전환
+- **Redis 캐싱** — 좋아요 수는 Cache-Aside(읽기 캐시), 조회수는 증분 누적 + 배치 동기화(쓰기 버퍼)로 **요구 정확도에 따라 다르게 설계**
+- **랭킹(Sorted Set) 유실 복구** — 임시 키 + `RENAME`으로 무중단 원자적 교체, 조회 시 지연 재구축. `FLUSHDB` 후 자동 복구 검증(450ms → 30ms)
+- **테스트 격리 / CI** — 전용 MySQL(tmpfs) + Redis 논리 DB 분리, GitHub Actions service container로 자동 검증
 
 ## 기타 프로젝트 (교육 과정)
 
