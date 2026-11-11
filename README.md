@@ -6,7 +6,7 @@
 
 - Email : 35wkd2817@naver.com
 - Portfolio : [DB Metadata Generator](https://github.com/kang1597/db-metadata-generator)
-
+              [content-ranking-system](https://github.com/kang1597/content-ranking)
 <br>
 
 ## 경력 요약 (총 2년 2개월)
